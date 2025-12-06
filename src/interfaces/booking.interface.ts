@@ -4,3 +4,7 @@ export interface ICreateBooking {
   rent_start_date: string;
   rent_end_date: string;
 }
+
+export interface IUpdateBooking {
+  status: string;
+}

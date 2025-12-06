@@ -1,6 +1,8 @@
 import { pool } from "../../config/db";
-import { ICreateBooking } from "../../interfaces/booking.interface";
-import { IUpdateVehicle } from "../../interfaces/vehicle.interface";
+import {
+  ICreateBooking,
+  IUpdateBooking,
+} from "../../interfaces/booking.interface";
 
 const createBooking = async (body: ICreateBooking) => {
   const { customer_id, vehicle_id, rent_start_date, rent_end_date } = body;
@@ -73,53 +75,66 @@ const findAllBookings = async (email: string, role: string) => {
   return bookings;
 };
 
-const findBookingById = async (bookingId: number) => {
+const updateBooking = async (
+  bookingId: number,
+  email: string,
+  body: IUpdateBooking,
+  isAdmin: boolean = false
+) => {
   const booking = await pool.query("SELECT * FROM bookings WHERE id = $1", [
     bookingId,
   ]);
-  return booking;
-};
 
-const updateBooking = async (bookingId: number, body: IUpdateVehicle) => {
-  const existingBooking = await pool.query(
-    "SELECT * FROM bookings WHERE id = $1",
-    [bookingId]
-  );
+  console.log("email", email);
+  console.log("isAdmin", isAdmin);
 
-  if (existingBooking.rows.length === 0) {
-    throw new Error("Vehicle not found");
+  if (!isAdmin) {
+    const user = await pool.query("SELECT id FROM users WHERE email = $1", [
+      email,
+    ]);
+
+    const userId = user.rows[0].id;
+
+    if (booking.rows[0].customer_id !== userId) {
+      throw new Error("Unauthorized to update this booking");
+    }
+
+    const result = await pool.query(
+      "UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *",
+      [body.status, bookingId]
+    );
+
+    return {
+      result: result.rows[0],
+      isCancelledByUser: true,
+    };
   }
 
-  const updatedVehicle = { ...existingBooking.rows[0], ...body };
-
-  const result = await pool.query(
-    "UPDATE vehicles SET vehicle_name = $1, type = $2, registration_number = $3, daily_rent_price = $4, availability_status = $5 WHERE id = $6 RETURNING *",
-    [
-      updatedVehicle.vehicle_name,
-      updatedVehicle.type,
-      updatedVehicle.registration_number,
-      updatedVehicle.daily_rent_price,
-      updatedVehicle.availability_status,
-      bookingId,
-    ]
+  const updatedBooking = await pool.query(
+    "UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *",
+    [body.status, bookingId]
   );
 
-  return result;
-};
-
-const deleteBooking = async (bookingId: number) => {
-  const result = await pool.query(
-    "DELETE FROM bookings WHERE id = $1 RETURNING *",
-    [bookingId]
+  const updateVehicleStatus = await pool.query(
+    `UPDATE vehicles SET availability_status = $1
+    WHERE id = $2 RETURNING *`,
+    ["available", booking.rows[0].vehicle_id]
   );
 
-  return (result.rowCount ?? 0) > 0;
+  return {
+    result: {
+      ...updatedBooking.rows[0],
+      vehicle: {
+        availability_status: updateVehicleStatus.rows[0].availability_status,
+      },
+    },
+    isCancelledByUser: false,
+  };
 };
 
-export const vehicleServices = {
+export const bookingServices = {
   createBooking,
   findAllBookings,
-  findBookingById,
+
   updateBooking,
-  deleteBooking,
 };
