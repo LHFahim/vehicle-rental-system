@@ -1,5 +1,8 @@
 import { pool } from "../../config/db";
-import { ICreateVehicle } from "../../interfaces/vehicle.interface";
+import {
+  ICreateVehicle,
+  IUpdateVehicle,
+} from "../../interfaces/vehicle.interface";
 
 const createVehicle = async (body: ICreateVehicle) => {
   const {
@@ -36,8 +39,36 @@ const findVehicleById = async (id: number) => {
   return vehicle;
 };
 
+const updateVehicle = async (id: number, body: IUpdateVehicle) => {
+  const existingVehicle = await pool.query(
+    "SELECT * FROM vehicles WHERE id = $1",
+    [id]
+  );
+
+  if (existingVehicle.rows.length === 0) {
+    throw new Error("Vehicle not found");
+  }
+
+  const updatedVehicle = { ...existingVehicle.rows[0], ...body };
+
+  const result = await pool.query(
+    "UPDATE vehicles SET vehicle_name = $1, type = $2, registration_number = $3, daily_rent_price = $4, availability_status = $5 WHERE id = $6 RETURNING *",
+    [
+      updatedVehicle.vehicle_name,
+      updatedVehicle.type,
+      updatedVehicle.registration_number,
+      updatedVehicle.daily_rent_price,
+      updatedVehicle.availability_status,
+      id,
+    ]
+  );
+
+  return result;
+};
+
 export const vehicleServices = {
   createVehicle,
   findAllVehicles,
   findVehicleById,
+  updateVehicle,
 };

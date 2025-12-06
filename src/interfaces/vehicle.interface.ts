@@ -5,3 +5,5 @@ export interface ICreateVehicle {
   daily_rent_price: number;
   availability_status: "available" | "booked";
 }
+
+export interface IUpdateVehicle extends Partial<ICreateVehicle> {}
