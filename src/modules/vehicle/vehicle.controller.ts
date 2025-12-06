@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { vehicleServices } from "./vehicle.service";
 
 const createVehicle = async (req: Request, res: Response) => {
-  console.log("hi");
   try {
     const result = await vehicleServices.createVehicle(req.body);
     res.status(201).json({
@@ -35,11 +34,11 @@ const findAllVehicles = async (req: Request, res: Response) => {
 };
 
 const findVehicleById = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const vehicleId = req.params.vehicleId;
 
   try {
     const result = await vehicleServices.findVehicleById(
-      id as unknown as number
+      vehicleId as unknown as number
     );
     res.status(200).json({
       success: true,
@@ -55,11 +54,11 @@ const findVehicleById = async (req: Request, res: Response) => {
 };
 
 const updateVehicle = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const vehicleId = req.params.vehicleId;
 
   try {
     const result = await vehicleServices.updateVehicle(
-      id as unknown as number,
+      vehicleId as unknown as number,
       req.body
     );
     res.status(200).json({

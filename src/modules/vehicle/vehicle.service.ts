@@ -32,17 +32,17 @@ const findAllVehicles = async () => {
   return vehicles;
 };
 
-const findVehicleById = async (id: number) => {
+const findVehicleById = async (vehicleId: number) => {
   const vehicle = await pool.query("SELECT * FROM vehicles WHERE id = $1", [
-    id,
+    vehicleId,
   ]);
   return vehicle;
 };
 
-const updateVehicle = async (id: number, body: IUpdateVehicle) => {
+const updateVehicle = async (vehicleId: number, body: IUpdateVehicle) => {
   const existingVehicle = await pool.query(
     "SELECT * FROM vehicles WHERE id = $1",
-    [id]
+    [vehicleId]
   );
 
   if (existingVehicle.rows.length === 0) {
@@ -59,7 +59,7 @@ const updateVehicle = async (id: number, body: IUpdateVehicle) => {
       updatedVehicle.registration_number,
       updatedVehicle.daily_rent_price,
       updatedVehicle.availability_status,
-      id,
+      vehicleId,
     ]
   );
 
