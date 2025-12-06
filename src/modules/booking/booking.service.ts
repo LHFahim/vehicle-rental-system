@@ -53,8 +53,23 @@ const createBooking = async (body: ICreateBooking) => {
   return res;
 };
 
-const findAllBookings = async () => {
-  const bookings = await pool.query("SELECT * FROM bookings");
+const findAllBookings = async (email: string, role: string) => {
+  console.log("🚀 ~ findAllBookings ~ role:", role);
+  if (role === "admin") {
+    const bookings = await pool.query("SELECT * FROM bookings");
+    return bookings;
+  }
+  const user = await pool.query("SELECT id FROM users WHERE email = $1", [
+    email,
+  ]);
+
+  const userId = user.rows[0].id;
+
+  const bookings = await pool.query(
+    "SELECT * FROM bookings WHERE customer_id = $1",
+    [userId]
+  );
+
   return bookings;
 };
 
