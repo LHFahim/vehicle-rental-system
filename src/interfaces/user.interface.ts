@@ -5,3 +5,5 @@ export interface ICreateUser {
   password: string;
   role: "admin" | "customer";
 }
+
+export interface IUpdateUser extends Omit<ICreateUser, "password"> {}
