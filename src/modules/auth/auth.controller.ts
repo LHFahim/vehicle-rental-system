@@ -9,7 +9,7 @@ const createUser = async (req: Request, res: Response) => {
 
     res.status(201).json({
       success: true,
-      message: "User created successfully",
+      message: "User registered successfully",
       data: result.rows[0],
     });
   } catch (error: any) {
@@ -20,6 +20,23 @@ const createUser = async (req: Request, res: Response) => {
   }
 };
 
+const loginUser = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await authServices.loginUser(email, password);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Login successful", data: result });
+  } catch (error: any) {
+    res
+      .status(401)
+      .json({ success: false, message: error.message, data: null });
+  }
+};
+
 export const authControllers = {
   createUser,
+  loginUser,
 };
