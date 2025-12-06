@@ -20,7 +20,14 @@ const updateUser = async (id: string, body: Partial<IUpdateUser>) => {
   return result.rows[0];
 };
 
+const deleteUser = async (id: string) => {
+  const result = await pool.query("DELETE FROM users WHERE id = $1", [id]);
+
+  return (result.rowCount ?? 0) > 0;
+};
+
 export const UserServices = {
   findAllUsers,
   updateUser,
+  deleteUser,
 };

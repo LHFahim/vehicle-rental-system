@@ -42,7 +42,34 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    return res
+      .status(400)
+      .json({ success: false, message: "User ID is required" });
+  }
+
+  try {
+    const result = await UserServices.deleteUser(id);
+    if (!result) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found", data: null });
+    }
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error: any) {
+    res
+      .status(401)
+      .json({ success: false, message: error.message, data: null });
+  }
+};
+
 export const userControllers = {
   findAllUsers,
   updateUser,
+  deleteUser,
 };
