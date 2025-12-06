@@ -24,6 +24,20 @@ const createVehicle = async (body: ICreateVehicle) => {
   return newVehicle;
 };
 
+const findAllVehicles = async () => {
+  const vehicles = await pool.query("SELECT * FROM vehicles");
+  return vehicles;
+};
+
+const findVehicleById = async (id: number) => {
+  const vehicle = await pool.query("SELECT * FROM vehicles WHERE id = $1", [
+    id,
+  ]);
+  return vehicle;
+};
+
 export const vehicleServices = {
   createVehicle,
+  findAllVehicles,
+  findVehicleById,
 };
