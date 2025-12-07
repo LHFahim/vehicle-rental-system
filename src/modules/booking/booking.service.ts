@@ -56,6 +56,10 @@ const createBooking = async (body: ICreateBooking) => {
 };
 
 const findAllBookings = async (email: string, role: string) => {
+  // calling the function to update booking status
+  // no clear instructions were given
+  await updateBookingStatusWhenPeriodEnds();
+
   if (role === "admin") {
     const adminData = [];
 
@@ -179,6 +183,27 @@ const updateBooking = async (
     },
     isCancelledByUser: false,
   };
+};
+
+const updateBookingStatusWhenPeriodEnds = async () => {
+  // no clear instructions were given about when to call this function
+  // so I am leaving it to be called via the find method
+
+  try {
+    const now = new Date();
+
+    const bookingsToUpdate = await pool.query(
+      "SELECT * FROM bookings WHERE rent_end_date < $1 AND status = $2",
+      [now, "active"]
+    );
+
+    for (const booking of bookingsToUpdate.rows) {
+      await pool.query("UPDATE bookings SET status = $1 WHERE id = $2", [
+        "returned",
+        booking.id,
+      ]);
+    }
+  } catch (error) {}
 };
 
 export const bookingServices = {
