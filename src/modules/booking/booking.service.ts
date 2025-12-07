@@ -38,7 +38,7 @@ const createBooking = async (body: ICreateBooking) => {
     ]
   );
 
-  const updateVehicleStatus = await pool.query(
+  await pool.query(
     "UPDATE vehicles SET availability_status = $1 WHERE id = $2 RETURNING *",
     ["booked", vehicle_id]
   );
@@ -85,9 +85,6 @@ const updateBooking = async (
     bookingId,
   ]);
 
-  console.log("email", email);
-  console.log("isAdmin", isAdmin);
-
   if (!isAdmin) {
     const user = await pool.query("SELECT id FROM users WHERE email = $1", [
       email,
@@ -102,6 +99,14 @@ const updateBooking = async (
     const result = await pool.query(
       "UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *",
       [body.status, bookingId]
+    );
+
+    // this was not mentioned in the instructions
+    // logically, even if the user cancels the booking, the vehicle should become available again
+    const updateVehicleStatus = await pool.query(
+      `UPDATE vehicles SET availability_status = $1
+    WHERE id = $2 RETURNING *`,
+      ["available", booking.rows[0].vehicle_id]
     );
 
     return {
