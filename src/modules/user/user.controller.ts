@@ -51,15 +51,15 @@ const updateUser = async (req: Request, res: Response) => {
 };
 
 const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) {
+  const { userId } = req.params;
+  if (!userId) {
     return res
       .status(400)
       .json({ success: false, message: "User ID is required" });
   }
 
   try {
-    const result = await UserServices.deleteUser(id);
+    const result = await UserServices.deleteUser(userId);
     if (!result) {
       return res
         .status(404)
