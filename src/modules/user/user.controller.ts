@@ -18,17 +18,25 @@ const findAllUsers = async (req: Request, res: Response) => {
 };
 
 const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { userId } = req.params;
   const body = req.body;
 
-  if (!id) {
+  if (!userId) {
     return res
       .status(400)
       .json({ success: false, message: "User ID is required", data: null });
   }
 
+  const isAdmin = req.user?.role === "admin";
+  const isOwner = req.user?.id === userId;
+
   try {
-    const result = await UserServices.updateUser(id, body);
+    const result = await UserServices.updateUser(
+      userId,
+      body,
+      isAdmin,
+      isOwner
+    );
 
     res.status(200).json({
       success: true,

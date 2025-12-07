@@ -9,15 +9,57 @@ const findAllUsers = async () => {
   return result.rows;
 };
 
-const updateUser = async (id: string, body: Partial<IUpdateUser>) => {
-  const { name, email, phone, role } = body;
+const updateUser = async (
+  userId: string,
+  body: Partial<IUpdateUser>,
+  isAdmin: boolean,
+  isOwner: boolean
+) => {
+  if (!isAdmin && !isOwner) {
+    throw new Error("Unauthorized");
+  }
 
-  const result = await pool.query(
-    "UPDATE users SET name = $1, email = $2, phone = $3, role = $4 WHERE id = $5 RETURNING id, name, email, phone, role",
-    [name, email, phone, role, id]
-  );
+  const existingUser = await pool.query("SELECT * FROM users WHERE id = $1", [
+    userId,
+  ]);
 
-  return result.rows[0];
+  if (isAdmin) {
+    if (existingUser.rows.length === 0) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = { ...existingUser.rows[0], ...body };
+
+    const result = await pool.query(
+      "UPDATE users SET name = $1, email = $2, phone = $3, role = $4 WHERE id = $5 RETURNING id, name, email, phone, role",
+      [
+        updatedUser.name,
+        updatedUser.email,
+        updatedUser.phone,
+        updatedUser.role,
+        userId,
+      ]
+    );
+
+    return result.rows[0];
+  }
+
+  if (isOwner) {
+    const updatedUser = { ...existingUser.rows[0], ...body };
+
+    const result = await pool.query(
+      "UPDATE users SET name = $1, email = $2, phone = $3, role = $4 WHERE id = $5 RETURNING id, name, email, phone, role",
+      [
+        updatedUser.name,
+        updatedUser.email,
+        updatedUser.phone,
+        updatedUser.role,
+        userId,
+      ]
+    );
+
+    return result.rows[0];
+  }
 };
 
 const deleteUser = async (id: string) => {

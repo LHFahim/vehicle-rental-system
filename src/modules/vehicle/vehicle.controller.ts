@@ -4,6 +4,7 @@ import { vehicleServices } from "./vehicle.service";
 const createVehicle = async (req: Request, res: Response) => {
   try {
     const result = await vehicleServices.createVehicle(req.body);
+
     res.status(201).json({
       success: true,
       message: "Vehicle created successfully",
@@ -22,8 +23,11 @@ const findAllVehicles = async (req: Request, res: Response) => {
     const result = await vehicleServices.findAllVehicles();
     res.status(200).json({
       success: true,
-      message: "Vehicles retrieved successfully",
-      data: result.rows,
+      message:
+        (result.rowCount ?? 0) > 0
+          ? "Vehicles retrieved successfully"
+          : "No vehicles found",
+      data: (result.rowCount ?? 0) > 0 ? result.rows : [],
     });
   } catch (error: any) {
     res.status(500).json({

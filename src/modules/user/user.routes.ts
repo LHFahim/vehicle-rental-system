@@ -4,8 +4,8 @@ import { userControllers } from "./user.controller";
 
 const router = Router();
 
-router.get("/", auth("admin", "customer"), userControllers.findAllUsers);
-router.put("/:id", auth("admin", "customer"), userControllers.updateUser);
+router.get("/", auth("admin"), userControllers.findAllUsers);
+router.put("/:userId", auth("admin", "customer"), userControllers.updateUser);
 router.delete("/:id", auth("admin", "customer"), userControllers.deleteUser);
 
 export const userRoutes = router;
