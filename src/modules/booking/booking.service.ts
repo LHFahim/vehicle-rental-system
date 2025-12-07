@@ -203,6 +203,13 @@ const updateBookingStatusWhenPeriodEnds = async () => {
         booking.id,
       ]);
     }
+
+    for (const booking of bookingsToUpdate.rows) {
+      await pool.query(
+        "UPDATE vehicles SET availability_status = $1 WHERE id = $2",
+        ["available", booking.vehicle_id]
+      );
+    }
   } catch (error) {}
 };
 
