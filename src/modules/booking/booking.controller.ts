@@ -25,8 +25,11 @@ const findAllBookings = async (req: Request, res: Response) => {
     );
     res.status(200).json({
       success: true,
-      message: "Bookings retrieved successfully",
-      data: result.rows,
+      message:
+        req?.user?.role === "admin"
+          ? "Bookings retrieved successfully"
+          : "Your bookings retrieved successfully",
+      data: result,
     });
   } catch (error: any) {
     res.status(500).json({

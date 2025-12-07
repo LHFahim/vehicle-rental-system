@@ -56,11 +56,38 @@ const createBooking = async (body: ICreateBooking) => {
 };
 
 const findAllBookings = async (email: string, role: string) => {
-  console.log("🚀 ~ findAllBookings ~ role:", role);
   if (role === "admin") {
+    const adminData = [];
+
     const bookings = await pool.query("SELECT * FROM bookings");
-    return bookings;
+
+    for (const booking of bookings.rows) {
+      const vehicle = await pool.query("SELECT * FROM vehicles WHERE id = $1", [
+        booking.vehicle_id,
+      ]);
+
+      const customer = await pool.query("SELECT * FROM users WHERE id = $1", [
+        booking.customer_id,
+      ]);
+
+      adminData.push({
+        ...booking,
+
+        customer: {
+          name: customer.rows[0].name,
+          email: customer.rows[0].email,
+        },
+
+        vehicle: {
+          vehicle_name: vehicle.rows[0].vehicle_name,
+          registration_number: vehicle.rows[0].registration_number,
+        },
+      });
+    }
+
+    return adminData;
   }
+
   const user = await pool.query("SELECT id FROM users WHERE email = $1", [
     email,
   ]);
@@ -72,7 +99,24 @@ const findAllBookings = async (email: string, role: string) => {
     [userId]
   );
 
-  return bookings;
+  const data = [];
+
+  for (const booking of bookings.rows) {
+    const vehicle = await pool.query("SELECT * FROM vehicles WHERE id = $1", [
+      booking.vehicle_id,
+    ]);
+
+    data.push({
+      ...booking,
+      vehicle: {
+        vehicle_name: vehicle.rows[0].vehicle_name,
+        registration_number: vehicle.rows[0].registration_number,
+        type: vehicle.rows[0].type,
+      },
+    });
+  }
+
+  return data;
 };
 
 const updateBooking = async (
